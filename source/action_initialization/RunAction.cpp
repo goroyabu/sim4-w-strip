@@ -40,8 +40,16 @@ void RunAction::BeginOfRunAction(const G4Run*)
     analysis_manager->OpenFile();
 
     analysis_manager->CreateNtuple("tree", "tree");
+    analysis_manager->CreateNtupleIColumn("eventID");
     analysis_manager->CreateNtupleIColumn("nhits");
-    analysis_manager->CreateNtupleDColumnV("edep", 32);
+    // analysis_manager->CreateNtupleDColumn("etotal");
+    analysis_manager->CreateNtupleIColumnV("detid",   128);
+    analysis_manager->CreateNtupleIColumnV("strip_x", 128);
+    analysis_manager->CreateNtupleIColumnV("strip_y", 128);    
+    analysis_manager->CreateNtupleDColumnV("edep",    128);
+    analysis_manager->CreateNtupleDColumnV("pos_x",   128);
+    analysis_manager->CreateNtupleDColumnV("pos_y",   128);
+    analysis_manager->CreateNtupleDColumnV("pos_z",   128);
     analysis_manager->FinishNtuple();
     
     std::cout << "RunAction::BeginOfRunAction()" << std::endl;

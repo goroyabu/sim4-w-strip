@@ -4,8 +4,8 @@
    @date    2020/01/31
 **/
 
-#ifndef Hit_hpp
-#define Hit_hpp
+#ifndef HitsCollection_hpp
+#define HitsCollection_hpp
 
 #include <G4VHit.hh>
 #include <G4THitsCollection.hh>
@@ -13,24 +13,18 @@
 #include <G4ThreeVector.hh>
 #include <G4Threading.hh>
 
-/// Calorimeter hit class
-///
-/// It defines data members to store the the energy deposit and track lengths
-/// of charged particles in a selected volume:
-/// - fEdep, fTrackLength
-
-class Hit : public G4VHit
+class DsdHit : public G4VHit
 {
     
 public:
     
-    Hit();
-    Hit(const Hit&);
-    virtual ~Hit();
+    DsdHit();
+    DsdHit(const DsdHit&);
+    virtual ~DsdHit();
     
     // operators
-    const Hit& operator=(const Hit&);
-    G4bool operator==(const Hit&) const;
+    const DsdHit& operator=(const DsdHit&);
+    G4bool operator==(const DsdHit&) const;
     
     inline void* operator new(size_t);
     inline void  operator delete(void*);
@@ -50,47 +44,58 @@ private:
     
     G4double fEdep;        ///< Energy deposit in the sensitive volume
     G4double fTrackLength; ///< Track length in the  sensitive volume
+
+public:
+    G4int detid;
+    G4int strip_x, strip_y;
+    //G4double pos_x, pos_y, pos_z;
+    G4ThreeVector pos;
+    G4double edep;
+
+    DsdHit* SetDetectorID( G4int id );
+    DsdHit* SetStripID( G4int x, G4int y );
+    DsdHit* SetPosition( const G4ThreeVector& p );
+    DsdHit* SetEnergy( G4double energy );
+    
+    bool IsSamePixel( const DsdHit& other );
+    bool IsAdjacentPixel( const DsdHit& other );
+    DsdHit* MergeSamePixel( const DsdHit& other );
+    DsdHit* MergeAdjacentPixel( const DsdHit& other, G4int mode=0 );
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+using HitsCollection = G4THitsCollection<DsdHit>;
 
-using HitsCollection = G4THitsCollection<Hit>;
+extern G4ThreadLocal G4Allocator<DsdHit>* DsdHitAllocator;
 
-extern G4ThreadLocal G4Allocator<Hit>* HitAllocator;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-inline void* Hit::operator new(size_t)
+inline void* DsdHit::operator new(size_t)
 {
-    if (!HitAllocator) {
-	HitAllocator = new G4Allocator<Hit>;
+    if (!DsdHitAllocator) {
+	DsdHitAllocator = new G4Allocator<DsdHit>;
     }
     void *hit;
-    hit = (void *) HitAllocator->MallocSingle();
+    hit = (void *) DsdHitAllocator->MallocSingle();
     return hit;
 }
 
-inline void Hit::operator delete(void *hit)
+inline void DsdHit::operator delete(void *hit)
 {
-    if (!HitAllocator) {
-	HitAllocator = new G4Allocator<Hit>;
+    if (!DsdHitAllocator) {
+	DsdHitAllocator = new G4Allocator<DsdHit>;
     }
-    HitAllocator->FreeSingle((Hit*) hit);
+    DsdHitAllocator->FreeSingle((DsdHit*) hit);
 }
 
-inline void Hit::Add(G4double de, G4double dl) {
+inline void DsdHit::Add(G4double de, G4double dl) {
     fEdep += de; 
     fTrackLength += dl;
 }
 
-inline G4double Hit::GetEdep() const { 
+inline G4double DsdHit::GetEdep() const { 
     return fEdep; 
 }
 
-inline G4double Hit::GetTrackLength() const { 
+inline G4double DsdHit::GetTrackLength() const { 
     return fTrackLength; 
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

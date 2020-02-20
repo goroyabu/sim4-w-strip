@@ -7,14 +7,15 @@
 /myapp/setName nantokasssslsls
 #/myapp/setSize 13.0
 /myapp/setThick 100.0 mm
+/myapp/geom 25.0
 /run/initialize
 
 # /run/setCut 1 nm
 
 #** Setup of ParticleGun **#
 /gun/particle gamma
-/gun/energy 3000 keV
-/gun/position -5. 0. 0.5. cm
+/gun/energy 30 keV
+/gun/position -1. 0. 0. cm
 /gun/direction 1. 0. 0.
 
 #** Activate and define histgrams **#

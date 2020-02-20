@@ -6,74 +6,94 @@
 
 #include "UImessenger.hpp"
 #include "DetectorConstruction.hpp"
+#include "UIcmdWithAKeyAValueAndUnit.hpp"
+
+#include "UIcmdWithCustomizableArguments.hpp"
 
 #include <G4UIdirectory.hh>
 #include <G4UIcmdWithAString.hh>
 #include <G4UIcmdWithADoubleAndUnit.hh>
 
+#include <G4SystemOfUnits.hh>
+
 #include <iostream>
+
+using std::cout;
+using std::endl;
 
 UImessenger::UImessenger()
     :G4UImessenger(),
-     homedir(nullptr),
+     dir_home(nullptr),
      detector_construction(nullptr)
 {
-    this->homedir = new G4UIdirectory( "/myapp/" );
-    this->homedir->SetGuidance( "Commands specific to this app" );
+    dir_home = new G4UIdirectory( "/wstrip/" );
+    dir_home->SetGuidance( "Commands specific to this app" );
 
-    word = new G4UIcmdWithAString( "/myapp/setName", this );
-    word->SetGuidance( "nandemo iiyo" );
-    word->SetParameterName( "your_choice", true );
-    word->AvailableForStates( G4State_PreInit, G4State_Idle );
-    word->SetToBeBroadcasted( false );
+    auto geom_path =  (G4String)dir_home->GetCommandPath()+"geom/" ;
+    dir_geom = new G4UIdirectory( geom_path.c_str() );
 
-    detector_thickness
-	= new G4UIcmdWithADoubleAndUnit( "/myapp/setThick", this );
-    detector_thickness->SetGuidance( "Thickness of layers" );
-    detector_thickness->SetParameterName( "Thick", true, true );
-    detector_thickness->SetRange( "Thick>0.0" );
-    detector_thickness->SetDefaultUnit( "mm" );
-    detector_thickness->SetUnitCategory( "Length" );
-    detector_thickness->AvailableForStates( G4State_PreInit, G4State_Idle );
-    detector_thickness->SetToBeBroadcasted( false );
-
-    // SizeCmd = new G4UIcmdWithADoubleAndUnit("/testem/det/setSize",this);
-    // fSizeCmd->SetGuidance("Set size of the box");
-    // fSizeCmd->SetParameterName("Size",false);
-    // fSizeCmd->SetRange("Size>0.");
-    // fSizeCmd->SetUnitCategory("Length");
-    // fSizeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-    // fSizeCmd->SetToBeBroadcasted(false);
+    auto length_path = (G4String)dir_geom->GetCommandPath()+"setLengthOf";
+    cmd_geom_length = new UIcmdWithAKeyAValueAndUnit( length_path.c_str(), this );
+    cmd_geom_length->SetGuidance( "Command to Change a Length" );
+    cmd_geom_length->SetParameterName( "Length", false, true );
+    // cmd_geom_length->SetRange( "Size>0.0" );
+    // cmd_geom_length
+    // 	->SetKeyCandidates("detectorSize detectorThick detectorGap worldSize");
+    cmd_geom_length->SetDefaultUnit( "mm" );
+    cmd_geom_length->SetUnitCategory( "Length" );
+    cmd_geom_length->AvailableForStates( G4State_PreInit, G4State_Idle );
+    cmd_geom_length->SetToBeBroadcasted( false );
+    
+    auto layers_path = (G4String)dir_geom->GetCommandPath()+"addDetectorLayer";
+    //cmd_geom_layer = new UIcmdWithAKeyAValueAndUnit( layers_path.c_str(), this );
+    cmd_geom_layer = new UIcmdWithAStringADoubleAndUnit( layers_path.c_str(), this );
+    cmd_geom_layer->SetGuidance( "Command to Add a Detector Layer");
+    cmd_geom_layer->SetParameterName( "Size", false, true );
+    cmd_geom_layer->SetDefaultUnit( "um" );
+    cmd_geom_layer->SetDefaultValue( 500*CLHEP::um );
+    cmd_geom_layer->SetUnitCategory( "Length" );
+    cmd_geom_layer->AvailableForStates( G4State_PreInit, G4State_Idle );
+    cmd_geom_layer->SetToBeBroadcasted( false ); 
     
     std::cout << "UImessenger::UImessenger()" << std::endl;
 }
 
 UImessenger::~UImessenger()
 {
-    delete this->homedir;
-    delete this->word;
-    delete this->detector_thickness;
+    delete this->dir_home;
 }
 
 void UImessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 {
-    std::cout << "set... " << newValue << std::endl;
-    std::cout << this->detector_thickness->GetCurrentValue() << std::endl;
+    using std::cout;
+    using std::endl;
+    cout << " UImessenger::SetNewValue" << endl;
+    cout << " Command Path = " << command->GetCommandPath() << endl;
+    cout << " Input Value  = " << newValue << endl;
+    
     if (!detector_construction) {
-	std::cout << "nuulllll" << std::endl;
+	cout << " Pointer of DetectorConstruction is not given to UImessenger" << endl;
+	return;
     }
     
-    if ( command == this->word ) {
-	std::cout << "Param=" << newValue << std::endl;
+    if ( command == this->cmd_geom_length ) {
+	auto key   = this->cmd_geom_length->GetNewKey( newValue );
+	auto value = this->cmd_geom_length->GetNewDoubleValue( newValue );	
+	detector_construction->SetLengthOf( key, value );
     }
-    else if ( command == this->detector_thickness ) {
-	std::cout << "TTTThick=" << newValue << std::endl;
-	detector_construction
-	    ->SetLayerThickness( detector_thickness->GetNewDoubleValue( newValue ) );
+    else if ( command == this->cmd_geom_layer ) {
+	//auto key   = this->cmd_geom_layer->GetNewKey( newValue );
+	auto key   = this->cmd_geom_layer->GetNewString( newValue );
+	auto value = this->cmd_geom_layer->GetNewDoubleValue( newValue );
+	detector_construction->AddDetectorLayers( key, value );
     }
     else {
-	std::cout << "there is not such command" << std::endl;
+	cout << "***Error*** There is not such a command named "
+	     << command->GetCommandPath() << endl;
     }
+    
+    cout << " UImessenger::SetNewValue End" << endl;
+    
 }
 
 int UImessenger::SetDetectorConstruction(DetectorConstruction* detector)

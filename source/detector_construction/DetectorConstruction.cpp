@@ -4,37 +4,63 @@
    @date    2019/12/22
 **/
 
-/** User defined classes **/
 #include "DetectorConstruction.hpp"
 #include "SensitiveDetector.hpp"
-//#include "SteppingAction.hpp"
 
-/** Headers for units **/
+#include <iostream>
+#include <string>
+
 #include <G4UnitsTable.hh>
 #include <G4SystemOfUnits.hh>
 
-/** Classes for materials **/
+#include <G4Element.hh>
+#include <G4Material.hh>
 #include <G4NistManager.hh>
 
-/** Classes for solids and volumes **/
 #include <G4Box.hh>
 #include <G4LogicalVolume.hh>
 #include <G4VPhysicalVolume.hh>
 #include <G4PVPlacement.hh>
 
-/** Classes for sensitive detector **/
 #include <G4SDManager.hh>
+#include <G4GeometryManager.hh>
+#include <G4PhysicalVolumeStore.hh>
+#include <G4LogicalVolumeStore.hh>
+#include <G4SolidStore.hh>
 
 #include <G4RunManager.hh>
 #include <G4StateManager.hh>
 
+using std::cout;
+using std::endl;
+
 DetectorConstruction::DetectorConstruction()
-    : G4VUserDetectorConstruction(),
-      m_logical_world(nullptr),
-      m_physical_world(nullptr)
+    : G4VUserDetectorConstruction()
 {
-    this->layer_thickness = 1*mm;
     std::cout << "DetectorConstruction::DetectorConstruction()" << std::endl;
+    
+    map_key2str["worldMate"]        = "AIR";
+    map_key2val["worldSize"]        = 10*cm;
+    map_key2vec["worldCenter"]      = G4ThreeVector(0,0,0);
+
+    map_key2str["detectorMate"]     = "CdTe";
+    map_key2val["detectorSize"]     = 32*mm;
+    map_key2val["detectorGap"]      = 4*mm;
+    map_key2vec["detectorCenter"]   = G4ThreeVector(0,0,0);
+
+    G4NistManager * nist_manager = G4NistManager::Instance();
+    if ( !nist_manager->FindOrBuildMaterial("CdTe") ) {
+	auto Cd = new G4Element("Cadmium",   "Cd", 48., 112.41*g/mole);
+	auto Te = new G4Element("Tellurium", "Te", 52., 127.60*g/mole);
+	auto CdTe = new G4Material("CdTe", 5.85*g/cm3, 2);
+	CdTe->AddElement(Cd, 1);
+	CdTe->AddElement(Te, 1);
+    }
+    if ( !nist_manager->FindOrBuildMaterial("Si") ) {
+	new G4Material("Si", 14., 28.09*g/mole, 2.330*g/cm3);
+    }
+    
+    G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 }
 
 DetectorConstruction::~DetectorConstruction()
@@ -43,49 +69,98 @@ DetectorConstruction::~DetectorConstruction()
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
+    cout << "DetectorConstruction::Construct()" << endl;
+    G4GeometryManager::GetInstance()->OpenGeometry();
+    G4PhysicalVolumeStore::GetInstance()->Clean();
+    G4LogicalVolumeStore::GetInstance()->Clean();
+    G4SolidStore::GetInstance()->Clean();
+    
     G4NistManager * nist_manager = G4NistManager::Instance();
+    G4SDManager   * sd_manager   = G4SDManager::GetSDMpointer();
 
-    /** Definition of the world **/
-    auto box_world = new G4Box("BoxWorld", 10*cm, 10*cm, 10*cm);
-    G4Material * material_world = nist_manager->FindOrBuildMaterial( "G4_AIR" );    
-    m_logical_world
-	= new G4LogicalVolume( box_world, material_world, "LogicalWorld" );
-    m_physical_world
-	= new G4PVPlacement(0, G4ThreeVector(0,0,0), m_logical_world,
-			    "PhysicalWorld", 0, false, 0 ); 
-
-    /** Definition of the detector **/
-    auto thin_plate
-	= new G4Box("ThinPlate", this->layer_thickness, 5*cm, 5*cm);
-    G4Material * material_detector = nist_manager->FindOrBuildMaterial( "G4_Si" );
-    auto logical_detector
-	= new G4LogicalVolume( thin_plate, material_detector, "LogicalDetector" );
-    auto physical_detector
-	= new G4PVPlacement(0, G4ThreeVector(0,0,0), logical_detector,
-			    "PhysicalDetector", m_logical_world, false, 0 );
+    /* Definition of World */
+    auto size_wld     = this->map_key2val["worldSize"];
+    auto matestr_wld  = "G4_"+this->map_key2str["worldMate"];
+    auto material_wld = nist_manager->FindOrBuildMaterial( matestr_wld );
+    auto box_wld      = new G4Box( "BoxWorld", size_wld, size_wld, size_wld );
+    auto logical_wld  = new G4LogicalVolume( box_wld, material_wld, "LogicalWorld" );
+    auto physical_wld = new G4PVPlacement( 0, G4ThreeVector(0,0,0), logical_wld, "PhysicalWorld", 0, false, 0 ); 
     
-    /** Register the detector as the sensitive detector **/
-    auto sensitive_detector = new SensitiveDetector("mySensitiveDetector");
-    G4SDManager::GetSDMpointer()->AddNewDetector( sensitive_detector );
-    this->SetSensitiveDetector( logical_detector, sensitive_detector );
-
-    /** or **/
-    //auto stepping_action = SteppingAction::Instance();
-    //stepping_action->SetVolume( logical_detector );
+    /* Definition of Detector */
+    // auto thick_det    = this->map_key2val["detectorThick"];
+    auto size_det     = this->map_key2val["detectorSize"];
+    auto gap_det      = this->map_key2val["detectorGap"];
+    // auto matestr_det  = "G4_"+this->map_key2str["detectorMate"];
+    // auto matestr_det  = this->map_key2str["detectorMate"];
+    // auto material_det = nist_manager->FindOrBuildMaterial( matestr_det );
+    // auto box_det      = new G4Box( "BoxDetector", size_det, size_det, thick_det );    
+    // auto logical_det  = new G4LogicalVolume( box_det, material_det, "LogicalDetector" );
+    // auto physical_det = new G4PVPlacement( 0, G4ThreeVector(0,0,0), logical_det, "PhysicalDetector", logical_wld, false, 0 );
     
-    std::cout << "DetectorConstruction::Construct()" << std::endl;
-    std::cout << "Thickness of Layer = " << layer_thickness << std::endl;
-    std::cout << "ptr= " << this << std::endl;
-    return m_physical_world;
+    /* Register a Sensitive Detector */
+    // G4String sd_name = "mySensitiveDetector_0";
+    // auto sensitive_detector = new SensitiveDetector( sd_name );
+    // sensitive_detector->SetGridXaxis( 128, -size_det*0.5, size_det*0.5 );
+    // sensitive_detector->SetGridYaxis( 128, -size_det*0.5, size_det*0.5 );
+    // sensitive_detector->SetGridZaxis(   1,             0,    thick_det );
+    // sd_manager->AddNewDetector( sensitive_detector );
+    // this->SetSensitiveDetector( logical_det, sensitive_detector );
+
+    auto ndet = (int)vec_detthic.size();
+    for ( int i=0; i<ndet; ++i) {
+	auto idstr = std::to_string(i);
+	auto thick_det = vec_detthic[i];
+	auto matestr_det = vec_detmate[i];
+	auto material_det = nist_manager->FindOrBuildMaterial( matestr_det );
+	cout << "i=" << i << ",materrial=" << matestr_det << endl;
+	
+	auto box_det_itr            = new G4Box( "BoxDetector", size_det, size_det, thick_det );
+	auto logical_det_itr        = new G4LogicalVolume( box_det_itr, material_det, "LogicalDetector"+idstr );
+	new G4PVPlacement( 0, G4ThreeVector( 0, 0, -i*gap_det ), logical_det_itr, "PhysicalDetector"+idstr, logical_wld, false, 0 );
+	auto sensitive_detector_itr = new SensitiveDetector( "mySensitiveDetector"+idstr );
+	sensitive_detector_itr->SetGridXaxis( 128, -size_det*0.5, size_det*0.5 );
+	sensitive_detector_itr->SetGridYaxis( 128, -size_det*0.5, size_det*0.5 );
+	sensitive_detector_itr->SetGridZaxis(   1,             0,    thick_det );
+	sensitive_detector_itr->SetDetectorID(i);
+	sd_manager->AddNewDetector( sensitive_detector_itr );
+	this->SetSensitiveDetector( logical_det_itr, sensitive_detector_itr );	
+    }    
+    
+    // cout << "DetectorConstruction::Construct() End" << endl;
+    return physical_wld;
 }
 
-int DetectorConstruction::SetLayerThickness(double thickness_mm)
+int DetectorConstruction::SetNumberOf(const G4String& key, G4int number)
 {
-    this->layer_thickness = thickness_mm;
-    std::cout << "set layer thickness = " << this->layer_thickness << std::endl;
-    if ( G4StateManager::GetStateManager()->GetCurrentState() != G4State_PreInit ) {
-	G4RunManager::GetRunManager()->ReinitializeGeometry();
+    if ( this->map_key2int.find(key) == this->map_key2int.end() ){
+	G4cerr << "*Warning* in DetectorConstruction::SetNumberOf : "
+	       << "There is no command key named " << key << G4endl;
+	return -1;
     }
-    std::cout << "ptr=" << this << std::endl;
+    this->map_key2int[key] = number;
+    
+    if ( G4StateManager::GetStateManager()->GetCurrentState() != G4State_PreInit )
+	G4RunManager::GetRunManager()->ReinitializeGeometry();
+    return 0;    
+}
+int DetectorConstruction::SetLengthOf(const G4String& key, G4double value)
+{
+    if ( this->map_key2val.find(key) == this->map_key2val.end() ){
+	G4cerr << "*Warning* in DetectorConstruction::SetLengthOf : "
+	       << "There is no command key named " << key << G4endl;
+	return -1;
+    }
+    this->map_key2val[key] = value;
+    
+    if ( G4StateManager::GetStateManager()->GetCurrentState() != G4State_PreInit )
+	G4RunManager::GetRunManager()->ReinitializeGeometry();
+    return 0;
+}
+
+int DetectorConstruction::AddDetectorLayers(const G4String& material, G4double thickness)
+{
+    vec_detmate.emplace_back(material);
+    vec_detthic.emplace_back(thickness);
+    
     return 0;
 }

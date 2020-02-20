@@ -24,8 +24,8 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
-    std::cout << "PrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
-
+    // std::cout << "PrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
+    
     /** 1. Macro **/
     // /gun/particle gamma
     // /gun/energy 100 keV

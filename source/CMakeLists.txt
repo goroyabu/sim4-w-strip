@@ -1,5 +1,5 @@
 # Project 
-project(g4-cdte-dsd CXX)
+project(sim4-w-strip CXX)
 
 # C++
 cmake_minimum_required(VERSION 3.15)

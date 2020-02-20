@@ -19,5 +19,5 @@ SteppingAction::~SteppingAction()
 
 void SteppingAction::UserSteppingAction( const G4Step * )
 {
-    std::cout << "SteppingAction::UserSteppingAction()" << std::endl;
+    // std::cout << "SteppingAction::UserSteppingAction()" << std::endl;
 }

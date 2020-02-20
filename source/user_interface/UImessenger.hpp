@@ -15,6 +15,10 @@ class G4VUserDetectorConstruction;
 class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
 
+class UIcmdWithAKeyAValueAndUnit;
+
+class UIcmdWithAStringADoubleAndUnit;
+
 class UImessenger : public G4UImessenger
 {
     
@@ -28,11 +32,17 @@ public:
     
 private:
     
-    G4UIdirectory * homedir;
-    G4UIcmdWithAString * word;
-    G4UIcmdWithADoubleAndUnit * detector_thickness;
+    G4UIdirectory * dir_home;
+
+    G4UIdirectory              * dir_geom;
+    UIcmdWithAKeyAValueAndUnit * cmd_geom_length;
+    //UIcmdWithAKeyAValueAndUnit * cmd_geom_layer;
+    UIcmdWithAStringADoubleAndUnit * cmd_geom_layer;
     
     DetectorConstruction * detector_construction;
+
+    // G4UIcmdWithAString * word;
+    // G4UIcmdWithADoubleAndUnit * detector_thickness;
 
 };
 
