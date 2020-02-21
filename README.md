@@ -83,7 +83,7 @@ build ディレクトリを作って、コンパイルとインストールを�
 
 
 
-![](/Users/goroyabu/Desktop/geant4_window.png)
+![](figure4README/geant4_window.png)
 
 
 
@@ -97,7 +97,7 @@ Session: /control/execute vis_geom.mac
 
 
 
-![](/Users/goroyabu/Desktop/geant4_geometry.png)
+![](figure4README/geant4_geometry.png)
 
 
 
