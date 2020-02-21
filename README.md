@@ -42,30 +42,28 @@ C++ をゴリゴリ書く人なら、こっちを直接見た方が早いかも�
 
 # 1. インストール
 
+本コードでは、Geant4 と ROOT 、そしてそれらに必要なライブラリ郡を Homebrew を通じてインストールしたことを想定している。
 
+```shell
+ $ brew install geant4
+ $ brew install root
+```
 
-## コンパイル
-
-ディレクトリをコピーする。
+Geant4 と ROOT がインストールできたら、以下を実行する。
 
 ```
-cd workdir
-cp -r /path/to/template/G4DSDtemplate .
-cd G4DSDtemplate
+ $ git clone https://github.com/goroyabu/sim4-w-strip
+ $ cd sim4-w-strip
 ```
 
 build ディレクトリを作って、コンパイルとインストールをする。
 
+```shell
+ $ mkdir build
+ $ cd build
+ $ cmake ../
+ $ make install -j
 ```
-mkdir build
-cd build
-cmake ../
-make install -j
-```
-
-
-
-
 
 
 
@@ -73,27 +71,75 @@ make install -j
 
 
 
-# 2. マクロで動かす
+# 2. 使い方
 
+## GUI を開く
 
+インストールが無事に完了したら、以下のコマンドでアプリケーションを起動すると、ウインドウが開き、GUIセッションがスタートする。
 
-動かす。ジオメトリを可視化するなら、
-
-```
-g4-dsd
-```
-
-シミュレーションを走らせるなら、
-
-```
-g4-dsd gamma_test.mac
+```shell
+ $ sim4-w-strip
 ```
 
-これでうまくいけば、OK。
 
 
-既存のマクロから変更後、同様にして走らせてください。
-以下に挙げるコマンドの書き方に注意して、使い方を確認しましょう。
+![](/Users/goroyabu/Desktop/geant4_window.png)
+
+
+
+ウインドウ下部の `Session:` に Geant4 コマンドを入力することで様々な操作ができる。ここではマクロを読み込んで、検出器を可視化してみる。
+
+```shell
+Session: /control/execute vis_geom.mac
+```
+
+`/control/execute` はマクロを実行するコマンドで、 `vis_geom.mac` がマクロのファイル名である。実行するとワールド内に5枚の検出器が表示されるはず。向きや大きさをマウスで操作できる。
+
+
+
+![](/Users/goroyabu/Desktop/geant4_geometry.png)
+
+
+
+ソフトを終了するときは、
+
+```
+Session : exit
+```
+
+を入力するか、ウインドウをバツ印で消すか、コマンド+Qを押す。
+
+
+
+## マクロでシミュレーションを実行する
+
+GUI を使わずに、コマンドを記述したマクロを引数に指定すれば、それを読み込んで実行することができる。シミュレーションのテストランができるマクロを実行する。
+
+```shell
+ $ sim4-w-strip gamma_test.mac
+```
+
+終了後、同じディレクトリに `result_gamma.root` が生成されているはずである。
+
+ROOT のマクロを実行して、スペクトルを書く。これはイベントごとの各検出器でのエネルギー合計値を詰めたヒストグラムである。
+
+``` sh
+ $ root result_gamma.root draw.C
+```
+
+
+
+![](/Users/goroyabu/Desktop/gamma_result_draw_h.png)
+
+
+
+
+
+## マクロの解説と設定変更
+
+本コードではマクロによる設定変更で DSD を使った様々なシミュレーションが行えることを目指している。Geant4 ですでに用意されているコマンドにも多くの種類があるので、ここではシミュレーション内容に直接関連する本コードオリジナルのコマンドを中心に説明を行う。なおマクロ全体は本項の最後に載せている。
+
+
 
 **Geant4 マクロのコマンドの特徴**
 
@@ -103,73 +149,12 @@ g4-dsd gamma_test.mac
 - ディレクトリ構造がある
 
 ```shell
-/path/of/command/ Arg1 Arg2 3. 4 ... # THIS IS A COMMENT
+/path/of/command/ Arg1 Arg2 3. 4 cm # THIS IS A COMMENT
 ```
 
 
 
-
-
-```sh
-# ///-----------------------------------------///
-# /// @file    gamma_test.mac
-# /// @brief   Macro for test run with gamma 
-# /// @author  Goro Yabu
-# /// @date    2020/02/19
-# ///-----------------------------------------///
-
-##################################################
-### Verbose
-##################################################
-
-/control/verbose 2
-/run/verbose 2
-
-##################################################
-## Geometry
-##################################################
-
-/wstrip/geom/setLengthOf  worldSize      15    cm
-
-/wstrip/geom/setLengthOf  detectorSize   32.0  mm
-/wstrip/geom/setLengthOf  detectorGap    4     mm
-
-#/wstrip/geom/setPositionOf detectorCenter 0. 0. 0. mm
-
-/wstrip/geom/addDetectorLayer Si 500 um
-/wstrip/geom/addDetectorLayer Si 500 um
-/wstrip/geom/addDetectorLayer CdTe 750 um
-/wstrip/geom/addDetectorLayer CdTe 750 um
-/wstrip/geom/addDetectorLayer CdTe 750 um
-
-##################################################
-### ParticleGun 
-##################################################
-
-/gun/particle  gamma        # (Type)          # 粒子の種類
-/gun/energy    300.0 keV    # (E, Unit)       # エネルギー
-/gun/position  0. 0. 1. mm  # (X, Y, Z, Unit) # 始点 
-/gun/direction 0. 0. -1.    # (X, Y, Z)       # 方向      
-
-##################################################
-### Analysis
-##################################################
-
-/analysis/setFileName result_gamma # (Name) # 出力ファイル名(.rootの前) 
-
-##################################################
-### Run
-##################################################
-
-/run/setCut 100 um # 
-/run/beamOn 1000
-
-#------------------------------------------------
-```
-
-
-
-## ジオメトリの設定
+### ジオメトリの設定
 
 DSDを定義するには、コマンド `/wstrip/geom/addDetectorLayer` を必要分呼び出せばよい。各 DSD には定義された順に検出器番号 ( detid ) が振られる ( N-tuple の column を参照 ) 。例えば、単層のCdTe-DSDの場合、
 
@@ -195,9 +180,67 @@ DSDを定義するには、コマンド `/wstrip/geom/addDetectorLayer` を必�
 /wstrip/geom/setLengthOf  detectorGap    4     mm  # DSD 間のギャップ
 ```
 
+ジオメトリを設定後、初期化を行い、確定させる。このコマンドは元々 Geant4 で用意されているものである。
+
+```shell
+/run/initialize
+```
 
 
 
+ `gamma_test.mac` 
+
+```sh
+##################################################
+### Verbose
+##################################################
+
+/control/verbose 2
+/run/verbose 2
+
+##################################################
+## Geometry
+##################################################
+
+/wstrip/geom/setLengthOf  worldSize      15    cm
+
+/wstrip/geom/setLengthOf  detectorSize   32.0  mm
+/wstrip/geom/setLengthOf  detectorGap    4     mm
+
+#/wstrip/geom/setPositionOf detectorCenter 0. 0. 0. mm
+
+/wstrip/geom/addDetectorLayer Si 500 um
+/wstrip/geom/addDetectorLayer Si 500 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+
+/run/initialize
+
+##################################################
+### ParticleGun 
+##################################################
+
+/gun/particle  gamma        # (Type)          # 粒子の種類
+/gun/energy    511.0 keV    # (E, Unit)       # エネルギー
+/gun/position  0. 0. 1. mm  # (X, Y, Z, Unit) # 始点 
+/gun/direction 0. 0. -1.    # (X, Y, Z)       # 方向      
+
+##################################################
+### Analysis
+##################################################
+
+/analysis/setFileName result_gamma # (Name) # 出力ファイル名(.rootの前) 
+
+##################################################
+### Run
+##################################################
+
+/run/setCut 100 um # 
+/run/beamOn 100000
+
+#------------------------------------------------
+```
 
 
 
@@ -263,19 +306,19 @@ Geant4 は非常に多くのツールを持った、自由度が高いライブ�
 │   ├── PrimaryGeneratorAction.cpp          # o # 初期粒子を発生させるクラス
 │   ├── RunAction.cpp                       #   # ランの始めと終わりに行う処理を記述するクラス
 │   └── SteppingAction.cpp                  # o # 反応のステップごとに行う処理を記述するクラス
-|
+│
 ├── detector_construction                   # 検出器関連 #                 
 │   ├── DetectorConstruction.cpp            # o # ジオメトリを定義するクラス
 │   ├── HitsCollection.cpp                  #   # 検出器の信号を格納するクラス
 │   └── SensitiveDetector.cpp               # o # 検出器内で反応が起きたときの処理を記述するクラス
-|
+│
 ├── physics_list                            # 物理法則の定義 #
 │   └── PhysicsList.cpp                     # o # 物理法則を定義するクラス
-|
+│
 ├── user_interface                          # UI 関連 #
 │   ├── UIcmdWithCustomizableArguments.cpp  #   # UIコマンドを受け取るためのクラス
 │   └── UImessenger.cpp                     # o # UIコマンドに応じて他のクラスに指示するクラス
-|
+│
 └── main.cpp                                #   # メイン関数
 ```
 
@@ -326,14 +369,19 @@ PhysicsList は物理法則を記述するクラスである。 本当はどの�
 
 ## ii. その他のクラス
 
-以下の 2 つのクラスはシミュレーション内容に直接影響しないクラスであるため、本項ではコードを書き換えてより発展的なシミュレーションをするユーザー向けに説明を行う。ここまでのクラスでは Geant4 を動かすのに必要な手続きがわかりにくくならないように、できるだけ関数の数を増やしたり、素直な記述をしたりしていた。しかし、この 2 つのクラスは、Geant4 で用意されている関数では
+以下の 2 つのクラスはシミュレーション内容に直接影響しないクラスであるため、本コードを使う人はいたとしても必ずしも内容を把握しておく必要性はない。そのため本項では、コードを書き換えてより発展的なシミュレーションをするユーザー向けに説明を行う。
+
+ここまでのクラスでは Geant4 を動かすのに必要な手続きがわかりにくくならないように、できるだけ関数の数を増やさずに素直な記述をしたりしていた。しかし、この 2 つのクラスでは記述を簡便にするための実装を行っている。
 
 ### AnalysisManager
 
-AnalysisManager は N-tuple と Histogram を定義するクラスである。Geant4 で
-
-
+AnalysisManager は N-tuple と Histogram を定義を行うクラスで、Geant4 のクラスである G4RootAnalysisManager を継承している。 このクラスで実装した機能は大きく分けて 2 つあり、 1 つは Column へのアクセスを文字列で行えるようにしたことと、もう 1 つは 、配列の Column を定義するクラスとは別のクラスが Fill できるようにしたことである。
 
 ### UImessenger
 
-UImessenger は マクロ or GUI での操作で用いるコマンドを定義、処理するクラスである。
+UImessenger は マクロ or GUI での操作で用いるコマンドを定義、処理するクラスである。 
+
+#### UIcmdWithCustomizableArguments
+
+コマンドを定義する UIcommand を継承したクラス。任意の引数の定義し、入力された値を取得することを簡便に行えるクラス。
+

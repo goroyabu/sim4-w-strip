@@ -1,0 +1,43 @@
+# ///-----------------------------------------///
+# /// @file    vis_geom.mac
+# /// @brief   Macro to visualize geometry
+# /// @author  Goro Yabu
+# /// @date    2020/02/19
+# ///-----------------------------------------///
+
+##################################################
+### Geometry
+##################################################
+
+/wstrip/geom/setLengthOf  worldSize      15    cm
+
+/wstrip/geom/setLengthOf  detectorSize   32.0  mm
+/wstrip/geom/setLengthOf  detectorGap    4     mm
+
+#/wstrip/geom/setPositionOf detectorCenter 0. 0. 0. mm
+
+/wstrip/geom/addDetectorLayer Si 500 um
+/wstrip/geom/addDetectorLayer Si 500 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+
+##################################################
+## Initialuze
+##################################################
+
+/run/initialize
+
+##################################################
+### Visualize
+##################################################
+
+/vis/open OGL 600x600-0+0
+
+/vis/drawVolume
+
+/vis/viewer/set/viewpointThetaPhi 90. 0.
+
+/vis/scene/add/axes 0 0 0 10 cm
+
+#------------------------------------------------

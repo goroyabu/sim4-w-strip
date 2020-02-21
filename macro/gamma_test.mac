@@ -1,0 +1,57 @@
+# ///-----------------------------------------///
+# /// @file    gamma_test.mac
+# /// @brief   Macro for test run with gamma 
+# /// @author  Goro Yabu
+# /// @date    2020/02/19
+# ///-----------------------------------------///
+
+##################################################
+### Verbose
+##################################################
+
+/control/verbose 1
+/run/verbose 1
+
+##################################################
+## Geometry
+##################################################
+
+/wstrip/geom/setLengthOf  worldSize      15    cm
+
+/wstrip/geom/setLengthOf  detectorSize   32.0  mm
+/wstrip/geom/setLengthOf  detectorGap    4     mm
+
+#/wstrip/geom/setPositionOf detectorCenter 0. 0. 0. mm
+
+/wstrip/geom/addDetectorLayer Si 500. um
+/wstrip/geom/addDetectorLayer Si 500. um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+/wstrip/geom/addDetectorLayer CdTe 750 um
+
+/run/initialize
+
+##################################################
+### ParticleGun 
+##################################################
+
+/gun/particle  gamma
+/gun/energy    511.0 keV
+/gun/position  0. 0. 1. mm
+/gun/direction 0. 0. -1.
+
+##################################################
+### Analysis
+##################################################
+
+/analysis/setFileName result_gamma
+# /analysis/h1/set 0  1000 0. 1000. keV 
+
+##################################################
+### Run
+##################################################
+
+/run/setCut 100 um
+/run/beamOn 100000
+
+#------------------------------------------------

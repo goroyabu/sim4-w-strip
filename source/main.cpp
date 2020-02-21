@@ -74,7 +74,11 @@ int main(int argc, char* argv[])
     	G4String fileName = argv[1];
     	ui_manager->ApplyCommand(command+fileName);
     }
+
+    delete run_manager;
+    delete ui_executive;
+    delete vis_executive;
+    delete ui_messenger;
     
-    return 0;
-    
+    return 0;    
 }
