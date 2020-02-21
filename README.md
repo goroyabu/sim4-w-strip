@@ -129,7 +129,7 @@ ROOT のマクロを実行して、スペクトルを書く。これはイベン
 
 
 
-![](/Users/goroyabu/Desktop/gamma_result_draw_h.png)
+![](figure4README/gamma_result_draw_h.png)
 
 
 
