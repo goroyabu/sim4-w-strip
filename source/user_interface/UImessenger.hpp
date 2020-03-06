@@ -44,6 +44,8 @@ private:
     // G4UIcmdWithAString * word;
     // G4UIcmdWithADoubleAndUnit * detector_thickness;
 
+    G4int n_called_command;
+    
 };
 
 #endif

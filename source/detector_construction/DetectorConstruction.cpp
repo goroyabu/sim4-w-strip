@@ -7,6 +7,7 @@
 #include "DetectorConstruction.hpp"
 #include "SensitiveDetector.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -107,12 +108,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // this->SetSensitiveDetector( logical_det, sensitive_detector );
 
     auto ndet = (int)vec_detthic.size();
+    if ( ndet > 0 ) cout << "***** Construct Geometry *****" << endl;
+    
     for ( int i=0; i<ndet; ++i) {
 	auto idstr = std::to_string(i);
 	auto thick_det = vec_detthic[i];
 	auto matestr_det = vec_detmate[i];
 	auto material_det = nist_manager->FindOrBuildMaterial( matestr_det );
-	cout << "i=" << i << ",materrial=" << matestr_det << endl;
+	//cout << "i=" << i << ",materrial=" << matestr_det << endl;
+	cout << "  DETID     : " << i << std::right << std::setw(5) << endl;
+	cout << "  Material  : " << matestr_det << std::setw(10) << endl;
+	cout << "  Thickness : " << thick_det << std::setw(5) << " mm " << endl;
+	cout << endl;
 	
 	auto box_det_itr            = new G4Box( "BoxDetector", size_det, size_det, thick_det );
 	auto logical_det_itr        = new G4LogicalVolume( box_det_itr, material_det, "LogicalDetector"+idstr );

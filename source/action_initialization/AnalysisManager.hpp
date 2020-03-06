@@ -36,6 +36,9 @@ public:
     
     G4bool FillNtupleIColumnV(G4int columnId, G4int elementId, G4int value);
     G4bool FillNtupleDColumnV(G4int columnId, G4int elementId, G4double value);
+
+    G4bool AddNtupleIColumnName(const G4String& name, G4int value);
+    G4bool AddNtupleDColumnName(const G4String& name, G4double value);    
     
 private:
 
@@ -46,8 +49,10 @@ private:
     static constexpr int string_number  = 3;
     
     static AnalysisManager* AnalysisManagerInstance;
-    std::vector<std::vector<G4int>*> IColumn;
-    std::vector<std::vector<G4double>*> DColumn;
+    std::vector<G4int> IColumn;
+    std::vector<G4double> DColumn;
+    std::vector<std::vector<G4int>*> IColumnV;
+    std::vector<std::vector<G4double>*> DColumnV;
 
     struct column_index
     {
@@ -86,7 +91,6 @@ private:
 	      
 	{
 	    if ( this->maxSize == 1 ) {
-		this->indexInType = -1;
 		this->isVector = false;
 		this->isVariable = false;
 	    }

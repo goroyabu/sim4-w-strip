@@ -34,16 +34,16 @@ public:
     virtual void Print() override;
     
     // methods to handle data
-    void Add(G4double de, G4double dl);
+    // void Add(G4double de, G4double dl);
     
     // get methods
-    G4double GetEdep() const;
-    G4double GetTrackLength() const;
+    // G4double GetEdep() const;
+    // G4double GetTrackLength() const;
     
 private:
     
-    G4double fEdep;        ///< Energy deposit in the sensitive volume
-    G4double fTrackLength; ///< Track length in the  sensitive volume
+    // G4double fEdep;        ///< Energy deposit in the sensitive volume
+    // G4double fTrackLength; ///< Track length in the  sensitive volume
 
 public:
     G4int detid;
@@ -51,11 +51,13 @@ public:
     //G4double pos_x, pos_y, pos_z;
     G4ThreeVector pos;
     G4double edep;
+    G4double total_energy;
 
     DsdHit* SetDetectorID( G4int id );
     DsdHit* SetStripID( G4int x, G4int y );
     DsdHit* SetPosition( const G4ThreeVector& p );
     DsdHit* SetEnergy( G4double energy );
+    DsdHit* AddTotalEnergy( G4double energy );
     
     bool IsSamePixel( const DsdHit& other );
     bool IsAdjacentPixel( const DsdHit& other );
@@ -85,17 +87,24 @@ inline void DsdHit::operator delete(void *hit)
     DsdHitAllocator->FreeSingle((DsdHit*) hit);
 }
 
-inline void DsdHit::Add(G4double de, G4double dl) {
-    fEdep += de; 
-    fTrackLength += dl;
+inline DsdHit* DsdHit::AddTotalEnergy( G4double energy )
+{
+    total_energy += energy;
+    return this;
 }
 
-inline G4double DsdHit::GetEdep() const { 
-    return fEdep; 
-}
 
-inline G4double DsdHit::GetTrackLength() const { 
-    return fTrackLength; 
-}
+// inline void DsdHit::Add(G4double de, G4double dl) {
+//     fEdep += de; 
+//     fTrackLength += dl;
+// }
+
+// inline G4double DsdHit::GetEdep() const { 
+//     return fEdep; 
+// }
+
+// inline G4double DsdHit::GetTrackLength() const { 
+//     return fTrackLength; 
+// }
 
 #endif

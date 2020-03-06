@@ -57,10 +57,12 @@ SensitiveDetector::~SensitiveDetector()
 void SensitiveDetector::Initialize( G4HCofThisEvent* hce )
 {
     // std::cout << "SensitiveDetector::Initialize()" << std::endl;
-
-    this->hits_collection = new HitsCollection("detector", "collection");
+    
+    //this->hits_collection = new HitsCollection("detector", "collection");
+    this->hits_collection = new HitsCollection( GetName(), GetName()+"_hc" );
     auto index_of_hits_collection
-	= G4SDManager::GetSDMpointer()->GetCollectionID( "collection" );
+	= G4SDManager::GetSDMpointer()->GetCollectionID( GetName()+"_hc" );
+	//= G4SDManager::GetSDMpointer()->GetCollectionID( "collection" );
     hce->AddHitsCollection( index_of_hits_collection, this->hits_collection );
 }
 
@@ -82,22 +84,34 @@ void SensitiveDetector::EndOfEvent( G4HCofThisEvent* )
 	}
 	
 	auto current  = (*hits)[i];
+	int mode = 1;
 
 	int nhits_merged = (int)merged_hits.size();
 	for ( int j=0; j<nhits_merged; ++j ) {
-	    if ( merged_hits[j]->IsSamePixel( *current ) ) {
-		merged_hits[j]->MergeSamePixel( *current );
-		j = nhits_merged++;
+	    if ( mode == 0 ) {
+		if ( merged_hits[j]->IsSamePixel( *current ) ) {
+		    merged_hits[j]->MergeSamePixel( *current );
+		    j = nhits_merged++;		    
+		}
 	    }
+	    else {
+		if ( merged_hits[j]->IsAdjacentPixel( *current ) ) {
+		    merged_hits[j]->MergeAdjacentPixel( *current );
+		    j = nhits_merged++;		    
+		}
+	    }		
 	}
 	if ( nhits_merged == (int)merged_hits.size() )
 	    merged_hits.emplace_back( current );	
 
     }
 
-    analysis_manager->FillNtupleIColumnName( "nhits", (int)merged_hits.size() );
+    //analysis_manager->FillNtupleIColumnName( "nhits", (int)merged_hits.size() );
+    nhits = (int)merged_hits.size();
+    analysis_manager->AddNtupleIColumnName( "nhits", nhits );
+    if ( nhits>0 )
+	analysis_manager->AddNtupleIColumnName( "hit_pattern", (int)pow(10, detector_id) );
     
-    // double total_energy = 0.0;    
     for ( auto hit : merged_hits ) {
 	analysis_manager->FillNtupleDColumnVName( "edep", hit->edep );
 	analysis_manager->FillNtupleIColumnVName( "detid",    hit->detid );
@@ -105,11 +119,11 @@ void SensitiveDetector::EndOfEvent( G4HCofThisEvent* )
 	analysis_manager->FillNtupleIColumnVName( "strip_y",  hit->strip_y   );
 	analysis_manager->FillNtupleDColumnVName( "pos_x",  hit->pos.x() );
 	analysis_manager->FillNtupleDColumnVName( "pos_y",  hit->pos.y() );
-	// total_energy += hit->edep;
+	analysis_manager->AddNtupleDColumnName( "etotal", hit->edep );
     }
-    // analysis_manager->FillNtupleDColumnName( "etotal", total_energy );
+    //if ( (int)merged_hits.size()!=0 )
+    //analysis_manager->FillNtupleDColumnName( "etotal", merged_hits[0]->total_energy );
     // analysis_manager->FillH1( 0, total_energy );
-    // cout << total_energy << endl;
 }
 
 G4bool SensitiveDetector::ProcessHits( G4Step* step, G4TouchableHistory* )
@@ -139,6 +153,7 @@ G4bool SensitiveDetector::ProcessHits( G4Step* step, G4TouchableHistory* )
 	->SetEnergy( edep/CLHEP::keV );
     
     hits_collection->insert( hit );
+    (*hits_collection)[0]->AddTotalEnergy( edep/CLHEP::keV );
 
     //hit->Add(edep, length);
     // if ( ! hit ) {

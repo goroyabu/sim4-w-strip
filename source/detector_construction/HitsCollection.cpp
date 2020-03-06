@@ -19,15 +19,16 @@ G4ThreadLocal G4Allocator<DsdHit>* DsdHitAllocator = 0;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DsdHit::DsdHit()
-    : G4VHit(),
-      fEdep(0.),
-      fTrackLength(0.)
+    : G4VHit()
+      //      fEdep(0.),
+      //fTrackLength(0.)
 {
     detid = -1;
     strip_x = -1;
     strip_y = -1;
     pos = G4ThreeVector(0,0,0);
-    edep = 0;
+    edep = 0.0;
+    total_energy = 0.0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -39,28 +40,30 @@ DsdHit::~DsdHit() {}
 DsdHit::DsdHit(const DsdHit& right)
     : G4VHit()
 {
-    fEdep        = right.fEdep;
-    fTrackLength = right.fTrackLength;
+    // fEdep        = right.fEdep;
+    // fTrackLength = right.fTrackLength;
     
     detid = right.detid;
     strip_x = right.strip_x;
     strip_y = right.strip_y;
     pos = right.pos;
     edep = right.edep;
+    total_energy = right.total_energy;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const DsdHit& DsdHit::operator=(const DsdHit& right)
 {
-    fEdep        = right.fEdep;
-    fTrackLength = right.fTrackLength;
+    // fEdep        = right.fEdep;
+    // fTrackLength = right.fTrackLength;
 
     detid = right.detid;
     strip_x = right.strip_x;
     strip_y = right.strip_y;
     pos = right.pos;
     edep = right.edep;    
+    total_energy = right.total_energy;
     
     return *this;
 }
@@ -76,12 +79,13 @@ G4bool DsdHit::operator==(const DsdHit& right) const
 
 void DsdHit::Print()
 {
-    std::cout
-	<< "Edep: " 
-	<< std::setw(7) << G4BestUnit(fEdep,"Energy")
-	<< " track length: " 
-	<< std::setw(7) << G4BestUnit( fTrackLength,"Length")
-	<< std::endl;
+    // std::cout
+    // 	<< "DETID: " << std::setw(3) << detid;
+    // 	<< "Edep: " 
+    // 	<< std::setw(7) << G4BestUnit(fEdep,"Energy")
+    // 	<< " track length: " 
+    // 	<< std::setw(7) << G4BestUnit( fTrackLength,"Length")
+    // 	<< std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -116,8 +120,9 @@ bool DsdHit::IsSamePixel( const DsdHit& other )
 bool DsdHit::IsAdjacentPixel( const DsdHit& other )
 {
     if( detid != other.detid ) return false;
-    return abs( strip_x - other.strip_x ) == 1
-	|| abs( strip_y - other.strip_y ) == 1;
+    return IsSamePixel( other ) == true 
+	|| abs( strip_x - other.strip_x ) <= 1
+	|| abs( strip_y - other.strip_y ) <= 1;
 }
 DsdHit* DsdHit::MergeSamePixel( const DsdHit& other )
 {

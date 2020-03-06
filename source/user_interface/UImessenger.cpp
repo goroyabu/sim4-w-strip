@@ -24,7 +24,8 @@ using std::endl;
 UImessenger::UImessenger()
     :G4UImessenger(),
      dir_home(nullptr),
-     detector_construction(nullptr)
+     detector_construction(nullptr),
+     n_called_command(0)
 {
     dir_home = new G4UIdirectory( "/wstrip/" );
     dir_home->SetGuidance( "Commands specific to this app" );
@@ -67,9 +68,18 @@ void UImessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 {
     using std::cout;
     using std::endl;
-    cout << " UImessenger::SetNewValue" << endl;
-    cout << " Command Path = " << command->GetCommandPath() << endl;
-    cout << " Input Value  = " << newValue << endl;
+    // cout << " UImessenger::SetNewValue" << endl;
+
+    if ( n_called_command==0 ) {
+	cout << "***** Reading .mac File... *****" << endl;
+	cout << endl;
+    }
+    cout <<     "  Command Path[" << n_called_command << "]";
+    cout <<     " : " << command->GetCommandPath() << endl;
+    cout <<     "  Input Value";
+    cout <<     " : " << newValue << endl;
+    
+    ++n_called_command;        
     
     if (!detector_construction) {
 	cout << " Pointer of DetectorConstruction is not given to UImessenger" << endl;
@@ -91,9 +101,9 @@ void UImessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 	cout << "***Error*** There is not such a command named "
 	     << command->GetCommandPath() << endl;
     }
-    
-    cout << " UImessenger::SetNewValue End" << endl;
-    
+
+    cout << endl;
+    //cout << " UImessenger::SetNewValue End" << endl;    
 }
 
 int UImessenger::SetDetectorConstruction(DetectorConstruction* detector)

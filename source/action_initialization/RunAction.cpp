@@ -42,7 +42,8 @@ void RunAction::BeginOfRunAction(const G4Run*)
     analysis_manager->CreateNtuple("tree", "tree");
     analysis_manager->CreateNtupleIColumn("eventID");
     analysis_manager->CreateNtupleIColumn("nhits");
-    // analysis_manager->CreateNtupleDColumn("etotal");
+    analysis_manager->CreateNtupleIColumn("hit_pattern");
+    analysis_manager->CreateNtupleDColumn("etotal");
     analysis_manager->CreateNtupleIColumnV("detid",   128);
     analysis_manager->CreateNtupleIColumnV("strip_x", 128);
     analysis_manager->CreateNtupleIColumnV("strip_y", 128);    

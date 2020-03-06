@@ -27,22 +27,21 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char* argv[])
-{
-    
-    cout << "main()" << endl;
+{    
+    // cout << "main()" << endl;
 
-    G4String cmd = "/test/doit 1.0 2 gamma";
-    G4int i = cmd.index(" ");
-    if( i != G4int(std::string::npos) ){
-	cout << "command = " << cmd(0,i) << endl;
-	cout << "parameters = " << cmd(i+1,cmd.length()-(i+1)) << endl;
-	cout << "i=" << i << ", length=" << cmd.length() << ", end=" << cmd.length()-(i+1) << endl;
-    }
+    // G4String cmd = "/test/doit 1.0 2 gamma";
+    // G4int i = cmd.index(" ");
+    // if( i != G4int(std::string::npos) ){
+    // 	cout << "command = " << cmd(0,i) << endl;
+    // 	cout << "parameters = " << cmd(i+1,cmd.length()-(i+1)) << endl;
+    // 	cout << "i=" << i << ", length=" << cmd.length() << ", end=" << cmd.length()-(i+1) << endl;
+    // }
     
-    auto now = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
-    std::stringstream ss;
-    ss << std::put_time( std::localtime(&now), "%Y%m%d_%H%M%S" );
-    cout << ss.str() << endl;
+    // auto now = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
+    // std::stringstream ss;
+    // ss << std::put_time( std::localtime(&now), "%Y%m%d_%H%M%S" );
+    // cout << ss.str() << endl;
     
     G4Random::setTheEngine( new CLHEP::RanecuEngine );
     G4Random::setTheSeed  ( time(NULL) );
