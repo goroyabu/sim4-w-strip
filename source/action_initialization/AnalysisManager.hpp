@@ -39,6 +39,8 @@ public:
 
     G4bool AddNtupleIColumnName(const G4String& name, G4int value);
     G4bool AddNtupleDColumnName(const G4String& name, G4double value);    
+
+    G4int GetNtupleIColumn(const G4String& name);
     
 private:
 

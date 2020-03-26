@@ -80,7 +80,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4SDManager   * sd_manager   = G4SDManager::GetSDMpointer();
 
     /* Definition of World */
-    auto size_wld     = this->map_key2val["worldSize"];
+    auto size_wld     = this->map_key2val["worldSize"]*0.5;
     auto matestr_wld  = "G4_"+this->map_key2str["worldMate"];
     auto material_wld = nist_manager->FindOrBuildMaterial( matestr_wld );
     auto box_wld      = new G4Box( "BoxWorld", size_wld, size_wld, size_wld );
@@ -88,24 +88,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     auto physical_wld = new G4PVPlacement( 0, G4ThreeVector(0,0,0), logical_wld, "PhysicalWorld", 0, false, 0 ); 
     
     /* Definition of Detector */
-    // auto thick_det    = this->map_key2val["detectorThick"];
-    auto size_det     = this->map_key2val["detectorSize"];
+    auto size_det     = this->map_key2val["detectorSize"]*0.5;
     auto gap_det      = this->map_key2val["detectorGap"];
-    // auto matestr_det  = "G4_"+this->map_key2str["detectorMate"];
-    // auto matestr_det  = this->map_key2str["detectorMate"];
-    // auto material_det = nist_manager->FindOrBuildMaterial( matestr_det );
-    // auto box_det      = new G4Box( "BoxDetector", size_det, size_det, thick_det );    
-    // auto logical_det  = new G4LogicalVolume( box_det, material_det, "LogicalDetector" );
-    // auto physical_det = new G4PVPlacement( 0, G4ThreeVector(0,0,0), logical_det, "PhysicalDetector", logical_wld, false, 0 );
-    
-    /* Register a Sensitive Detector */
-    // G4String sd_name = "mySensitiveDetector_0";
-    // auto sensitive_detector = new SensitiveDetector( sd_name );
-    // sensitive_detector->SetGridXaxis( 128, -size_det*0.5, size_det*0.5 );
-    // sensitive_detector->SetGridYaxis( 128, -size_det*0.5, size_det*0.5 );
-    // sensitive_detector->SetGridZaxis(   1,             0,    thick_det );
-    // sd_manager->AddNewDetector( sensitive_detector );
-    // this->SetSensitiveDetector( logical_det, sensitive_detector );
 
     auto ndet = (int)vec_detthic.size();
     if ( ndet > 0 ) cout << "***** Construct Geometry *****" << endl;
@@ -115,7 +99,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 	auto thick_det = vec_detthic[i];
 	auto matestr_det = vec_detmate[i];
 	auto material_det = nist_manager->FindOrBuildMaterial( matestr_det );
-	//cout << "i=" << i << ",materrial=" << matestr_det << endl;
+
 	cout << "  DETID     : " << i << std::right << std::setw(5) << endl;
 	cout << "  Material  : " << matestr_det << std::setw(10) << endl;
 	cout << "  Thickness : " << thick_det << std::setw(5) << " mm " << endl;

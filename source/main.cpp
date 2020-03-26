@@ -27,37 +27,37 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char* argv[])
-{    
-    // cout << "main()" << endl;
-
-    // G4String cmd = "/test/doit 1.0 2 gamma";
-    // G4int i = cmd.index(" ");
-    // if( i != G4int(std::string::npos) ){
-    // 	cout << "command = " << cmd(0,i) << endl;
-    // 	cout << "parameters = " << cmd(i+1,cmd.length()-(i+1)) << endl;
-    // 	cout << "i=" << i << ", length=" << cmd.length() << ", end=" << cmd.length()-(i+1) << endl;
-    // }
-    
-    // auto now = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
-    // std::stringstream ss;
-    // ss << std::put_time( std::localtime(&now), "%Y%m%d_%H%M%S" );
-    // cout << ss.str() << endl;
-    
+{
+    /* Setting of Random */
     G4Random::setTheEngine( new CLHEP::RanecuEngine );
     G4Random::setTheSeed  ( time(NULL) );
-    
+    /* Random */
+
+    /* Setting of Run Manager */
     auto run_manager  = new G4RunManager;
-    auto ui_messenger = new UImessenger;
     
     auto detector = new DetectorConstruction;
-    auto physics  = new PhysicsList;
-    auto action   = new ActionInitialization;
     run_manager->SetUserInitialization( detector );
-    run_manager->SetUserInitialization( physics  );
-    run_manager->SetUserInitialization( action   );
-    run_manager->Initialize();
     
+    auto physics  = new PhysicsList;
+    run_manager->SetUserInitialization( physics  );
+
+    auto action   = new ActionInitialization;       
+    run_manager->SetUserInitialization( action   );
+
+    run_manager->Initialize();
+    /* Run Manager */
+
+    
+    /* Setting of UI Messenger */
+    auto ui_messenger = new UImessenger;
+
     ui_messenger->SetDetectorConstruction( detector );
+
+    auto primary_generator = action->GetPrimaryGeneratorAction();
+    ui_messenger->SetPrimaryGeneratorAction( primary_generator );
+    /* UI Messenger */
+    
     
     auto ui_executive = new G4UIExecutive(argc,argv);
     auto ui_manager   = G4UImanager::GetUIpointer();

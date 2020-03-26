@@ -8,9 +8,17 @@
 #include "AnalysisManager.hpp"
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
+#include <iomanip>
+#include <chrono>
+#include <ctime>
 
 #include <g4root.hh>
+
+using std::cout;
+using std::endl;
 
 RunAction::RunAction()
     : G4UserRunAction()
@@ -37,6 +45,14 @@ G4Run* RunAction::GenerateRun()
 void RunAction::BeginOfRunAction(const G4Run*)
 {
     auto analysis_manager = AnalysisManager::Instance();
+    auto ima = std::chrono::system_clock::now();
+    auto ima_time = std::chrono::system_clock::to_time_t(ima);
+    std::stringstream ss;
+    ss << std::put_time( std::localtime(&ima_time), "%Y%m%d_%H%M%S" );
+    auto ima_str = ss.str();
+    auto outname = (G4String)analysis_manager->GetFileName()+"_"+ima_str;
+    
+    analysis_manager->SetFileName( outname );
     analysis_manager->OpenFile();
 
     analysis_manager->CreateNtuple("tree", "tree");

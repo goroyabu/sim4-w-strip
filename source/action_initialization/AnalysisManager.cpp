@@ -153,3 +153,11 @@ G4bool AnalysisManager::AddNtupleDColumnName(const G4String& name, G4double valu
     return G4RootAnalysisManager::FillNtupleDColumn(index.columnId,
 						    DColumn[index.indexInType] );
 }
+
+G4int AnalysisManager::GetNtupleIColumn(const G4String& name)
+{
+    auto index = this->GetColumnIndex( name );
+    if ( index.typeNumber != this->int_number ) return -1;
+    if ( index.isVector!=false || index.isVariable!=false ) return -1;
+    return IColumn[ index.indexInType ];
+}

@@ -186,9 +186,35 @@ DSDを定義するには、コマンド `/wstrip/geom/addDetectorLayer` を必�
 /run/initialize
 ```
 
+### 初期粒子の設定
+
+まず Particle Gun と General Particle Source (GPS) のどちらかを選択する。
+- Particle Gun : ある 1 点から粒子を 1 方向に放出する. マクロではあまり細かい設定ができないので、実際のシミュレーションでは使いにくいかもしれない。
+- GPS : ある平面 or 体積のどこかから粒子が放出される。 色々できるので、こちらの方がおすすめ。
+
+``` shell
+#/wstrip/prim/useParticleGun
+/wstrip/prim/useGPS
+```
+
+GPSで点線源を作る場合は、`type` を `Volume`、`shape` を `Sphere` に設定する。
+
+``` shell
+/gps/pos/type Volume
+/gps/pos/shape Sphere
+```
+
+プロファイルが円形なビームを作る場合は、`Plane` と `Circle` にする。
+
+```shell
+/gps/pos/type Plane
+/gps/pos/shape Circle
+```
+
+詳細は以下の通り。
 
 
- `gamma_test.mac` 
+ `gamma_test.mac`
 
 ```sh
 ##################################################
@@ -218,25 +244,64 @@ DSDを定義するには、コマンド `/wstrip/geom/addDetectorLayer` を必�
 /run/initialize
 
 ##################################################
-### ParticleGun 
+### PrimaryGenerator
+##################################################
+
+## Choose 1 Option
+#/wstrip/prim/useParticleGun
+/wstrip/prim/useGPS
+
+##################################################
+### ParticleGun
 ##################################################
 
 /gun/particle  gamma        # (Type)          # 粒子の種類
 /gun/energy    511.0 keV    # (E, Unit)       # エネルギー
-/gun/position  0. 0. 1. mm  # (X, Y, Z, Unit) # 始点 
+/gun/position  0. 0. 1. mm  # (X, Y, Z, Unit) # 始点
 /gun/direction 0. 0. -1.    # (X, Y, Z)       # 方向      
+
+##################################################
+### GeneralParticleSource
+##################################################
+
+### Point Source
+/gps/particle gamma
+/gps/pos/type Volume
+/gps/pos/shape Sphere
+/gps/pos/centre 0. 0. 41. mm
+/gps/pos/halfx 0.5 mm
+/gps/pos/halfy 0.5 mm
+/gps/ang/type iso
+/gps/ang/maxtheta 90 deg
+/gps/ene/type Mono
+/gps/ene/mono 511.0 keV
+#/gps/ene/min 511.0 keV
+#/gps/ene/max 511.0 keV
+
+### Beam
+# /gps/particle gamma
+# /gps/pos/type Plane
+# /gps/pos/shape Circle
+# /gps/pos/centre 0. 0. 50. mm
+# /gps/pos/radius       25 mm
+# #/gps/pos/halfx 25 mm
+# #/gps/pos/halfy 25 mm
+# /gps/ang/type iso
+# /gps/ang/maxtheta 0 deg
+# /gps/ene/type Mono
+# /gps/ene/mono 511.0 keV
 
 ##################################################
 ### Analysis
 ##################################################
 
-/analysis/setFileName result_gamma # (Name) # 出力ファイル名(.rootの前) 
+/analysis/setFileName sim # (Name) # 出力ファイル名の prefix (sim_%Y%m%d_%H%M%S.root)
 
 ##################################################
 ### Run
 ##################################################
 
-/run/setCut 100 um # 
+/run/setCut 100 um #
 /run/beamOn 100000
 
 #------------------------------------------------
@@ -332,7 +397,7 @@ Geant4 は非常に多くのツールを持った、自由度が高いライブ�
 
 ActionInitialization は ~Action クラスを内部に持っているクラスである。各 Action クラスは、所定の関数に処理を書いておくと、決まったタイミングでそれを実行するクラスであり、いくつかの種類がある。例えば、`RunAction` の `RunAction::BeginOfRunAction` はランの始めに実行される関数である。
 
-**User Action を記述するクラス** 
+**User Action を記述するクラス**
 
 | クラス名               | 仕事をするタイミング   | 仕事内容の例                                  |
 | ---------------------- | ---------------------- | --------------------------------------------- |
@@ -375,13 +440,14 @@ PhysicsList は物理法則を記述するクラスである。 本当はどの�
 
 ### AnalysisManager
 
-AnalysisManager は N-tuple と Histogram を定義を行うクラスで、Geant4 のクラスである G4RootAnalysisManager を継承している。 このクラスで実装した機能は大きく分けて 2 つあり、 1 つは Column へのアクセスを文字列で行えるようにしたことと、もう 1 つは 、配列の Column を定義するクラスとは別のクラスが Fill できるようにしたことである。
+AnalysisManager は N-tuple と Histogram を定義を行うクラスで、Geant4 のクラスである G4RootAnalysisManager を継承している。 このクラスで実装した機能は大きく分けて 2 つあり、 1 つは Column へのアクセスを文字列で行えるようにしたことである。Geant4 では Column の定義順で機械的に振られるインデックスを使って、各 Column にアクセスするようになっており、定義順の変更や新しい Column を途中に追加することでインデックスを書き換える必要があった。
+
+もう 1 つは、配列の Column の定義や値の追加・変更 を AnalysisManager の関数のみを使ってできるようにしたことである。Geant4 では、Column の定義時に配列のアドレスを AnalysisManager の関数に引数で与え、値の変更はその配列を直接操作することで行なっており、手続きが煩雑であった。
 
 ### UImessenger
 
-UImessenger は マクロ or GUI での操作で用いるコマンドを定義、処理するクラスである。 
+UImessenger は マクロ or GUI での操作で用いるコマンドを定義、処理するクラスである。
 
 #### UIcmdWithCustomizableArguments
 
 コマンドを定義する UIcommand を継承したクラス。任意の引数の定義し、入力された値を取得することを簡便に行えるクラス。
-

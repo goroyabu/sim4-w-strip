@@ -12,33 +12,25 @@
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
     :G4VUserPrimaryGeneratorAction(),
-     particle_gun(nullptr)
+     particle_gun(nullptr),
+     gps(nullptr),
+     use_particle_gun(true),
+     use_gps(false)
 {
     this->particle_gun  = new G4ParticleGun();
+    this->gps           = new G4GeneralParticleSource();
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
     delete this->particle_gun;
+    delete this->gps;
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
-    // std::cout << "PrimaryGeneratorAction::GeneratePrimaries()" << std::endl;
-    
-    /** 1. Macro **/
-    // /gun/particle gamma
-    // /gun/energy 100 keV
-    // /gun/direction 1. 0. 0.
-    // /gun/position -5. 0. 0.0. cm
-
-    /** 2. Hard Coding **/
-    // auto particle_definition
-    // 	= G4ParticleTable::GetParticleTable()->FindParticle("gamma");
-    // this->particle_gun->SetParticleDefinition(particle_definition);
-    // particle_gun->SetParticleEnergy            ( 100*keV );
-    // particle_gun->SetParticleMomentumDirection ( G4ThreeVector( 1.0, 0.0, 0.0) );
-    // particle_gun->SetParticlePosition          ( G4ThreeVector( -5.0*cm,  0.0*cm,  0.0*cm) );
-    
-    this->particle_gun->GeneratePrimaryVertex( event );
+    if ( use_particle_gun )
+	this->particle_gun->GeneratePrimaryVertex( event );
+    else if ( use_gps )
+	this->gps->GeneratePrimaryVertex( event );
 }

@@ -32,6 +32,14 @@
 /run/initialize
 
 ##################################################
+### PrimaryGenerator
+##################################################
+
+## Choose 1 Option
+#/wstrip/prim/useParticleGun
+/wstrip/prim/useGPS
+
+##################################################
 ### ParticleGun 
 ##################################################
 
@@ -41,17 +49,48 @@
 /gun/direction 0. 0. -1.
 
 ##################################################
+### GeneralParticleSource
+##################################################
+
+### Point Source
+/gps/particle gamma
+/gps/pos/type Volume
+/gps/pos/shape Sphere
+/gps/pos/centre 0. 0. 41. mm
+/gps/pos/halfx 0.5 mm
+/gps/pos/halfy 0.5 mm
+/gps/ang/type iso
+/gps/ang/maxtheta 90 deg
+/gps/ene/type Mono
+/gps/ene/mono 511.0 keV
+#/gps/ene/min 511.0 keV
+#/gps/ene/max 511.0 keV
+
+### Beam
+# /gps/particle gamma
+# /gps/pos/type Plane
+# /gps/pos/shape Circle
+# /gps/pos/centre 0. 0. 50. mm
+# /gps/pos/radius	25 mm
+# #/gps/pos/halfx 25 mm
+# #/gps/pos/halfy 25 mm
+# /gps/ang/type iso
+# /gps/ang/maxtheta 0 deg
+# /gps/ene/type Mono
+# /gps/ene/mono 511.0 keV
+
+##################################################
 ### Analysis
 ##################################################
 
-/analysis/setFileName result_gamma
-# /analysis/h1/set 0  1000 0. 1000. keV 
+/analysis/setFileName sim
+/analysis/h1/set 0  1000 0. 1000. keV 
 
 ##################################################
 ### Run
 ##################################################
 
 /run/setCut 100 um
-/run/beamOn 100000
+/run/beamOn 10000
 
 #------------------------------------------------
