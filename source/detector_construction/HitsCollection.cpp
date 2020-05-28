@@ -110,6 +110,11 @@ DsdHit* DsdHit::SetEnergy( G4double energy )
     this->edep = energy;
     return this;
 }
+DsdHit* DsdHit::SetProcessName( const G4String& name )
+{
+    this->proc_name = name;
+    return this;
+}
 
 bool DsdHit::IsSamePixel( const DsdHit& other )
 {

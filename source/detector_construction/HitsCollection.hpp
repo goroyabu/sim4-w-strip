@@ -52,12 +52,14 @@ public:
     G4ThreeVector pos;
     G4double edep;
     G4double total_energy;
+    G4String proc_name;
 
     DsdHit* SetDetectorID( G4int id );
     DsdHit* SetStripID( G4int x, G4int y );
     DsdHit* SetPosition( const G4ThreeVector& p );
     DsdHit* SetEnergy( G4double energy );
     DsdHit* AddTotalEnergy( G4double energy );
+    DsdHit* SetProcessName( const G4String& name );
     
     bool IsSamePixel( const DsdHit& other );
     bool IsAdjacentPixel( const DsdHit& other );

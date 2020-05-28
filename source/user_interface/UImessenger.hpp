@@ -12,11 +12,15 @@
 
 class DetectorConstruction;
 class PrimaryGeneratorAction;
+class PhysicsList;
+class EventAction;
 
 class G4VUserDetectorConstruction;
+class G4UIcmdWithAnInteger;
 class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithoutParameter;
+class G4UIcmdWithABool;
 
 //class UIcmdWithAKeyAValueAndUnit;
 class UIcmdWithAStringADoubleAndUnit;
@@ -32,6 +36,8 @@ public:
     virtual void SetNewValue(G4UIcommand * command, G4String newValue) override;
     int SetDetectorConstruction(DetectorConstruction* detector);
     int SetPrimaryGeneratorAction(PrimaryGeneratorAction* generator);
+    int SetPhysicsList(PhysicsList* physics);
+    int SetEventAction(EventAction* event);
     
 private:
 
@@ -39,16 +45,26 @@ private:
     G4UIdirectory * dir_home;
     G4UIdirectory * dir_geom;
     G4UIdirectory * dir_prim;
+    G4UIdirectory * dir_phys;
+    G4UIdirectory * dir_act;
 
     /* UIcmd */
     UIcmdWithAStringADoubleAndUnit * cmd_geom_length;
     UIcmdWithAStringADoubleAndUnit * cmd_geom_layer;
+
     G4UIcmdWithoutParameter * cmd_prim_use_gun;
     G4UIcmdWithoutParameter * cmd_prim_use_gps;
 
+    G4UIcmdWithABool * cmd_phys_use_livcomp;
+    G4UIcmdWithAString * cmd_phys_compton_model;
+
+    G4UIcmdWithAnInteger * cmd_act_save_min_nhits;
+    
     /* User Customized Class */
     DetectorConstruction * detector_construction;
     PrimaryGeneratorAction * primary_generator;
+    PhysicsList * physics_list;
+    EventAction * event_action;
     
     G4int n_called_command;
     

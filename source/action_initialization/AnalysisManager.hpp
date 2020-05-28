@@ -26,19 +26,24 @@ public:
     
     G4int CreateNtupleIColumn(const G4String& name);
     G4int CreateNtupleDColumn(const G4String& name);
+    G4int CreateNtupleSColumn(const G4String& name);
     G4int CreateNtupleIColumnV(const G4String& name, G4int maxSize=1);
     G4int CreateNtupleDColumnV(const G4String& name, G4int maxSize=1);
+    //G4int CreateNtupleSColumnV(const G4String& name, G4int maxSize=1);
     
     G4bool FillNtupleIColumnName(const G4String& name, G4int value);
     G4bool FillNtupleDColumnName(const G4String& name, G4double value);
+    G4bool FillNtupleSColumnName(const G4String& name, const G4String& value);
     G4bool FillNtupleIColumnVName(const G4String& name, G4int value);
-    G4bool FillNtupleDColumnVName(const G4String& name, G4double value);            
+    G4bool FillNtupleDColumnVName(const G4String& name, G4double value);
+    //G4bool FillNtupleSColumnVName(const G4String& name, const G4String& value);   
     
     G4bool FillNtupleIColumnV(G4int columnId, G4int elementId, G4int value);
     G4bool FillNtupleDColumnV(G4int columnId, G4int elementId, G4double value);
 
     G4bool AddNtupleIColumnName(const G4String& name, G4int value);
-    G4bool AddNtupleDColumnName(const G4String& name, G4double value);    
+    G4bool AddNtupleDColumnName(const G4String& name, G4double value);
+    G4bool AddNtupleSColumnName(const G4String& name, const G4String& value);    
 
     G4int GetNtupleIColumn(const G4String& name);
     
@@ -53,8 +58,11 @@ private:
     static AnalysisManager* AnalysisManagerInstance;
     std::vector<G4int> IColumn;
     std::vector<G4double> DColumn;
+    //std::vector<G4String> SColumn;
+    std::vector<std::string> SColumn;
     std::vector<std::vector<G4int>*> IColumnV;
     std::vector<std::vector<G4double>*> DColumnV;
+    // std::vector<std::vector<G4String>*> SColumnV;
 
     struct column_index
     {

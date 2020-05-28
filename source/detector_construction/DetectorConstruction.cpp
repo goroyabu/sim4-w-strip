@@ -96,7 +96,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     
     for ( int i=0; i<ndet; ++i) {
 	auto idstr = std::to_string(i);
-	auto thick_det = vec_detthic[i];
+	auto thick_det = vec_detthic[i]*0.5;
 	auto matestr_det = vec_detmate[i];
 	auto material_det = nist_manager->FindOrBuildMaterial( matestr_det );
 
@@ -109,9 +109,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 	auto logical_det_itr        = new G4LogicalVolume( box_det_itr, material_det, "LogicalDetector"+idstr );
 	new G4PVPlacement( 0, G4ThreeVector( 0, 0, -i*gap_det ), logical_det_itr, "PhysicalDetector"+idstr, logical_wld, false, 0 );
 	auto sensitive_detector_itr = new SensitiveDetector( "mySensitiveDetector"+idstr );
-	sensitive_detector_itr->SetGridXaxis( 128, -size_det*0.5, size_det*0.5 );
-	sensitive_detector_itr->SetGridYaxis( 128, -size_det*0.5, size_det*0.5 );
-	sensitive_detector_itr->SetGridZaxis(   1,             0,    thick_det );
+	sensitive_detector_itr->SetGridXaxis( 128, -size_det,  size_det  );
+	sensitive_detector_itr->SetGridYaxis( 128, -size_det,  size_det  );
+	sensitive_detector_itr->SetGridZaxis(   1,         0,  thick_det );
 	sensitive_detector_itr->SetDetectorID(i);
 	sd_manager->AddNewDetector( sensitive_detector_itr );
 	this->SetSensitiveDetector( logical_det_itr, sensitive_detector_itr );	

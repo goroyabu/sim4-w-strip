@@ -7,6 +7,7 @@
 #include "AnalysisManager.hpp"
 
 #include <algorithm>
+#include <string>
 
 using std::cout;
 using std::endl;
@@ -45,6 +46,7 @@ G4bool AnalysisManager::ClearNtupleVector()
 {
     for ( auto&& column : IColumn  ) column = 0;
     for ( auto&& column : DColumn  ) column = 0.0;
+    for ( auto&& column : SColumn  ) column = "";
     for ( auto&& column : IColumnV ) column->clear();
     for ( auto&& column : DColumnV ) column->clear();
     return true;
@@ -65,6 +67,14 @@ G4int AnalysisManager::CreateNtupleDColumn(const G4String& name)
     if ( this->AddColumnIndex( name, index ) < 0 ) return -1;
     DColumn.emplace_back( 0.0 );
     return G4RootAnalysisManager::CreateNtupleDColumn(name);
+}
+G4int AnalysisManager::CreateNtupleSColumn(const G4String& name)
+{
+    auto index = column_index( 0, ColumnIndex.size(), 1,
+			       this->string_number, SColumn.size() );
+    if ( this->AddColumnIndex( name, index ) < 0 ) return -1;
+    SColumn.emplace_back( "" );
+    return G4RootAnalysisManager::CreateNtupleSColumn(name);    
 }
 G4int AnalysisManager::CreateNtupleIColumnV(const G4String& name, G4int maxSize)
 {
@@ -101,6 +111,14 @@ G4bool AnalysisManager::FillNtupleDColumnName(const G4String& name, G4double val
     if ( index.isVector!=false || index.isVariable!=false ) return false;
     DColumn[ index.indexInType ] = value;
     return G4RootAnalysisManager::FillNtupleDColumn(index.columnId, value);
+}
+G4bool AnalysisManager::FillNtupleSColumnName(const G4String& name, const G4String& value)
+{
+    auto index = this->GetColumnIndex( name );
+    if ( index.typeNumber != this->string_number ) return false;
+    if ( index.isVector!=false || index.isVariable!=false ) return false;
+    SColumn[ index.indexInType ] = value;
+    return G4RootAnalysisManager::FillNtupleSColumn(index.columnId, value);
 }
 G4bool AnalysisManager::FillNtupleIColumnVName(const G4String& name, G4int value)
 {
@@ -152,6 +170,19 @@ G4bool AnalysisManager::AddNtupleDColumnName(const G4String& name, G4double valu
     DColumn[ index.indexInType ] += value;
     return G4RootAnalysisManager::FillNtupleDColumn(index.columnId,
 						    DColumn[index.indexInType] );
+}
+G4bool AnalysisManager::AddNtupleSColumnName(const G4String& name, const G4String& value)
+{
+    auto index = this->GetColumnIndex( name );
+    if ( index.typeNumber != this->string_number ) return false;
+    if ( index.isVector!=false || index.isVariable!=false ) return false;
+    // SColumn[ index.indexInType ] += value+":";
+    // auto str = std::string(value);
+    SColumn[ index.indexInType ] =  SColumn[ index.indexInType ]+":"+value;
+    // cout << SColumn[ index.indexInType ] << endl;
+    // G4RootAnalysisManager::FillNtupleSColumn( index.columnId, "" );
+    return G4RootAnalysisManager::FillNtupleSColumn
+	( index.columnId, (G4String)SColumn[index.indexInType] );
 }
 
 G4int AnalysisManager::GetNtupleIColumn(const G4String& name)

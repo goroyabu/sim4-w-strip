@@ -24,7 +24,7 @@ include_directories(detector_construction physics_list action_initialization use
 
 # ROOT
 find_package(ROOT REQUIRED)
-include_directories(${ROOT_INCLUDE_DIRS})
+#target_include_directories(${ROOT_INCLUDE_DIRS})
 
 # Geant4
 find_package(Geant4 REQUIRED ui_all vis_all)

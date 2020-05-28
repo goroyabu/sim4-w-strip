@@ -6,13 +6,20 @@
 
 #include "UImessenger.hpp"
 
+/* User Customized Class */
 #include "DetectorConstruction.hpp"
 #include "PrimaryGeneratorAction.hpp"
+#include "PhysicsList.hpp"
+#include "PhysicsConstructor.hpp"
+#include "EventAction.hpp"
+
 //#include "UIcmdWithAKeyAValueAndUnit.hpp"
 #include "UIcmdWithCustomizableArguments.hpp"
 
 #include <G4UIdirectory.hh>
+#include <G4UIcmdWithAnInteger.hh>
 #include <G4UIcmdWithAString.hh>
+#include <G4UIcmdWithABool.hh>
 #include <G4UIcmdWithADoubleAndUnit.hh>
 #include <G4UIcmdWithoutParameter.hh>
 
@@ -21,6 +28,7 @@
 #include <iostream>
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
 UImessenger::UImessenger()
@@ -28,6 +36,7 @@ UImessenger::UImessenger()
      dir_home(nullptr),
      detector_construction(nullptr),
      primary_generator(nullptr),
+     physics_list(nullptr),
      n_called_command(0)
 {
     dir_home = new G4UIdirectory( "/wstrip/" );
@@ -74,7 +83,34 @@ UImessenger::UImessenger()
     cmd_prim_use_gps->SetGuidance( "Enable GPS as Primary Generator" );
     cmd_prim_use_gps->SetGuidance( "and disable other types of generator like Particle Gun" );
     cmd_prim_use_gps->AvailableForStates( G4State_PreInit, G4State_Idle );    
-        
+
+    
+    auto phys_path = (G4String)dir_home->GetCommandPath()+"phys/";
+    dir_phys = new G4UIdirectory( phys_path.c_str() );
+
+    auto use_livcomp_path
+	= (G4String)dir_phys->GetCommandPath()+"useLivermoreCompton";
+    cmd_phys_use_livcomp
+	= new G4UIcmdWithABool( use_livcomp_path.c_str(), this);
+    cmd_phys_use_livcomp->SetGuidance( "Enable LivermoreComptonModel for ComptonScattering");
+    cmd_phys_use_livcomp->AvailableForStates( G4State_PreInit, G4State_Idle );    
+
+    auto comp_model_path = (G4String)dir_phys->GetCommandPath()+"comptonModel";
+    cmd_phys_compton_model = new G4UIcmdWithAString( comp_model_path.c_str(), this );
+    cmd_phys_compton_model->SetGuidance( "Set ComptonModel" );
+    cmd_phys_compton_model->AvailableForStates( G4State_PreInit, G4State_Idle );
+
+    
+    auto act_path = (G4String)dir_home->GetCommandPath()+"act/";
+    dir_act = new G4UIdirectory( act_path.c_str() );
+
+    auto save_min_nhits_path
+	= (G4String)dir_act->GetCommandPath()+"saveMinNhits";
+    cmd_act_save_min_nhits
+	= new G4UIcmdWithAnInteger( save_min_nhits_path.c_str(), this );
+    cmd_act_save_min_nhits->SetGuidance( "Minimum N-hits of events to be saved");
+    cmd_act_save_min_nhits->AvailableForStates( G4State_PreInit, G4State_Idle );
+    
     std::cout << "UImessenger::UImessenger()" << std::endl;
 }
 
@@ -104,22 +140,50 @@ void UImessenger::SetNewValue(G4UIcommand * command, G4String newValue)
     }
     
     if ( command == this->cmd_geom_length ) {
-	//auto key   = this->cmd_geom_length->GetNewKey( newValue );
+
 	auto key   = this->cmd_geom_length->GetNewString( newValue );
 	auto value = this->cmd_geom_length->GetNewDoubleValue( newValue );	
 	detector_construction->SetLengthOf( key, value );
+	
     }
     else if ( command == this->cmd_geom_layer ) {
-	//auto key   = this->cmd_geom_layer->GetNewKey( newValue );
+
 	auto key   = this->cmd_geom_layer->GetNewString( newValue );
 	auto value = this->cmd_geom_layer->GetNewDoubleValue( newValue );
 	detector_construction->AddDetectorLayers( key, value );
+	
     }
     else if ( command == this->cmd_prim_use_gun ) {
+	
 	primary_generator->EnableParticleGun();
+	
     }
     else if ( command == this->cmd_prim_use_gps ) {
+	
 	primary_generator->EnableGPS();
+	
+    }
+    else if ( command == this->cmd_phys_use_livcomp ) {
+	
+	auto value = this->cmd_phys_use_livcomp->GetNewBoolValue( newValue );
+	auto constructor
+	    = (PhysicsConstructor*)physics_list->GetPhysics("PhysicsConstructor");
+	constructor->SetParameter( "EnableLivermoreCompton", value );
+
+    }
+    else if ( command == this->cmd_phys_compton_model ) {
+
+	auto value = newValue;
+	auto constructor
+	    = (PhysicsConstructor*)physics_list->GetPhysics("PhysicsConstructor");
+	constructor->SetParameter( "ComptonModel", value );
+
+    }
+    else if ( command == this->cmd_act_save_min_nhits ) {
+
+	auto value = this->cmd_act_save_min_nhits->GetNewIntValue( newValue );
+	event_action->SetParameter( "SaveMinNhits", value );
+	
     }
     else {
 	cout << "***Error*** There is not such a command named "
@@ -148,5 +212,25 @@ int UImessenger::SetPrimaryGeneratorAction(PrimaryGeneratorAction* generator)
     }
     primary_generator = new PrimaryGeneratorAction();
     primary_generator = generator;
+    return 0;
+}
+int UImessenger::SetPhysicsList(PhysicsList* physics)
+{
+    if ( !physics ) {
+	cout << "***Error*** PhysicsList is nullptr" << endl;
+	return -1;
+    }
+    physics_list = new PhysicsList();
+    physics_list = physics;
+    return 0;
+}
+int UImessenger::SetEventAction(EventAction* event)
+{
+    if ( !event ) {
+	cout << "***Error*** EventAction is nullptr" << endl;
+	return -1;
+    }
+    event_action = new EventAction();
+    event_action = event;
     return 0;
 }

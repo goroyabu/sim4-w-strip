@@ -56,6 +56,11 @@ int main(int argc, char* argv[])
 
     auto primary_generator = action->GetPrimaryGeneratorAction();
     ui_messenger->SetPrimaryGeneratorAction( primary_generator );
+
+    auto event_action = action->GetEventAction();
+    ui_messenger->SetEventAction( event_action );
+    
+    ui_messenger->SetPhysicsList( physics );
     /* UI Messenger */
     
     

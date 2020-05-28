@@ -18,8 +18,8 @@ public:
     PhysicsList();
     ~PhysicsList();
 
-    void SetCuts() override;
-    
+    void SetCuts() override;    
+        
 };
 
 #endif

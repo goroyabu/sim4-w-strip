@@ -17,6 +17,7 @@
 #include <G4Step.hh>
 #include <G4HCofThisEvent.hh>
 #include <G4TouchableHistory.hh>
+#include <G4VProcess.hh>
 
 #include <G4SDManager.hh>
 
@@ -112,14 +113,20 @@ void SensitiveDetector::EndOfEvent( G4HCofThisEvent* )
     if ( nhits>0 )
 	analysis_manager->AddNtupleIColumnName( "hit_pattern", (int)pow(10, detector_id) );
     
-    for ( auto hit : merged_hits ) {
+    for ( auto hit : merged_hits ) {	
 	analysis_manager->FillNtupleDColumnVName( "edep", hit->edep );
 	analysis_manager->FillNtupleIColumnVName( "detid",    hit->detid );
 	analysis_manager->FillNtupleIColumnVName( "strip_x",  hit->strip_x   );
 	analysis_manager->FillNtupleIColumnVName( "strip_y",  hit->strip_y   );
 	analysis_manager->FillNtupleDColumnVName( "pos_x",  hit->pos.x() );
 	analysis_manager->FillNtupleDColumnVName( "pos_y",  hit->pos.y() );
+	analysis_manager->FillNtupleDColumnVName( "pos_z",  hit->pos.z() );
 	analysis_manager->AddNtupleDColumnName( "etotal", hit->edep );
+	analysis_manager->AddNtupleSColumnName( "proc_name", hit->proc_name );
+
+	auto [ x, y ] = GetCenterOfPixel( hit->strip_x, hit->strip_y );
+	analysis_manager->FillNtupleDColumnVName( "pixel_center_x", x );
+	analysis_manager->FillNtupleDColumnVName( "pixel_center_y", y );
     }
     //if ( (int)merged_hits.size()!=0 )
     //analysis_manager->FillNtupleDColumnName( "etotal", merged_hits[0]->total_energy );
@@ -134,6 +141,16 @@ G4bool SensitiveDetector::ProcessHits( G4Step* step, G4TouchableHistory* )
     // auto analysis_manager = AnalysisManager::Instance();
     
     G4StepPoint* pre = step->GetPreStepPoint();
+    G4StepPoint* post = step->GetPostStepPoint();
+
+    // auto process = pre->GetProcessDefinedStep();
+    auto process = post->GetProcessDefinedStep();
+    G4String process_name = "";
+    if ( process!=nullptr ) {
+	process_name = process->GetProcessName();
+	// if ( process_name!="msc" && process_name!="Transportation" )
+	//     cout << process_name << endl;
+    }
     
     G4double edep = step->GetTotalEnergyDeposit();
     G4double length = step->GetStepLength();
@@ -148,6 +165,7 @@ G4bool SensitiveDetector::ProcessHits( G4Step* step, G4TouchableHistory* )
     auto hit = new DsdHit;
     auto [ strip_x , strip_y ] = GetStripID( pos );
     hit->SetDetectorID( GetDetectorID() )
+	->SetProcessName( process_name )
 	->SetStripID( strip_x, strip_y )
 	->SetPosition( pos/CLHEP::mm )
 	->SetEnergy( edep/CLHEP::keV );
@@ -199,6 +217,14 @@ G4int SensitiveDetector::SetGridZaxis( G4int nbins, G4double min, G4double max )
     grid_zaxis->SetBins( nbins, min, max );	
     return 0;
 }
+std::pair<G4double, G4double> SensitiveDetector::GetCenterOfPixel( G4int strip_x, G4int strip_y )
+{
+    auto x = grid_xaxis->GetBinCenter( strip_x );
+    auto y = grid_xaxis->GetBinCenter( strip_y );
+    return std::make_pair(x, y);
+}
+
+
 TString SensitiveDetector::GetUniqueObjectName(const TString& name)
 {
     TObject* obj = gROOT->FindObject(name);

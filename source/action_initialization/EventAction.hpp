@@ -20,6 +20,13 @@ public:
 
     virtual void BeginOfEventAction(const G4Event*) override;
     virtual void EndOfEventAction(const G4Event*) override;
+
+    void SetParameter(const G4String& key, int value);
+
+
+private:
+
+    int save_nhit_min;
     
 };
 

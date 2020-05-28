@@ -21,6 +21,7 @@ using std::endl;
 EventAction::EventAction()
     : G4UserEventAction()
 {
+    save_nhit_min = 1;
 }
 
 EventAction::~EventAction()
@@ -48,8 +49,13 @@ void EventAction::EndOfEventAction(const G4Event*)
 {
     auto analysis_manager = AnalysisManager::Instance();
     
-    if ( analysis_manager->GetNtupleIColumn("nhits")>=1 ) {
+    if ( analysis_manager->GetNtupleIColumn("nhits")>=save_nhit_min ) {
 	analysis_manager->AddNtupleRow();
     }
     // std::cout << "EventAction::EndOfEventAction()" << std::endl;
+}
+void EventAction::SetParameter(const G4String& key, int value)
+{
+    if ( key == "SaveMinNhits" )
+	save_nhit_min = value;    
 }

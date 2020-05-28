@@ -37,6 +37,8 @@ public:
     G4int SetGridXaxis( G4int nbins, G4double min, G4double max );
     G4int SetGridYaxis( G4int nbins, G4double min, G4double max );
     G4int SetGridZaxis( G4int nbins, G4double min, G4double max );
+
+    std::pair<G4double, G4double> GetCenterOfPixel( G4int strip_x, G4int strip_y );
     
 private:
 

@@ -10,4 +10,4 @@ include(${Geant4_USE_FILE})
 include_directories(${Geant4_INCLUDE_DIR})
 
 include_directories(../detector_construction ../physics_list ../action_initialization ../user_interface)
-add_library(PhysList STATIC PhysicsList.cpp)
+add_library(PhysList STATIC PhysicsList.cpp  PhysicsConstructor.cpp)

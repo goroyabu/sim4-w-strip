@@ -11,12 +11,16 @@
 #include <G4UnitsTable.hh>
 #include <G4SystemOfUnits.hh>
 
-#include <G4EmLivermorePhysics.hh>
+//#include <G4EmLivermorePhysics.hh>
+//#include "CustomizedLivermorePhysics.hpp"
+#include "PhysicsConstructor.hpp"
 
 PhysicsList::PhysicsList()
     :G4VModularPhysicsList()
 {
-    this->RegisterPhysics( new G4EmLivermorePhysics );
+    // this->RegisterPhysics( new G4EmLivermorePhysics );
+    // this->RegisterPhysics( new CustomizedLivermorePhysics );
+    this->RegisterPhysics( new PhysicsConstructor );
     std::cout << "PhysicsList::PhysicsList()" << std::endl;
 }
 PhysicsList::~PhysicsList()
